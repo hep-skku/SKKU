@@ -229,7 +229,7 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
 
     // JES and uncertainties
     pat::Jet jetUp = jet, jetDn = jet;
-    double jecUncUp = 1, jecUncDn = 1;
+    double jecUncUp = 0, jecUncDn = 0;
     // Do JES uncertainty only for:
     //  - if it is FlavourPure* JEC
     //  - or parton flavour matches to JEC flavour

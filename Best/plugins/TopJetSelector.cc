@@ -53,9 +53,8 @@ private:
   edm::InputTag jetLabel_, metLabel_;
   std::vector<edm::InputTag> overlapCandLabels_;
 
-  bool doFlavourJECUnc_;
+  std::set<int> matchPdgIds_;
   JetCorrectionUncertainty *jecUncCalculator_;
-  std::map<int, JetCorrectionUncertainty*> flavourJECCalculators_;
   StringCutObjectSelector<pat::Jet, true>* isGoodJet_;
   double minPt_, maxEta_;
 
@@ -108,17 +107,15 @@ TopJetSelector::TopJetSelector(const edm::ParameterSet& pset)
 
   edm::FileInPath jecFile(jecUncFile);
 
-  doFlavourJECUnc_ = pset.getParameter<bool>("doFlavourJECUnc");
-  if ( !doFlavourJECUnc_ )
+  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), jecUncSource));
+  if ( jecUncSource == "FlavorPureGluon" ) matchPdgIds_.insert(21);
+  else if ( jecUncSource == "FlavorPureCharm" ) matchPdgIds_.insert(4);
+  else if ( jecUncSource == "FlavorPureBottom" ) matchPdgIds_.insert(5);
+  else if ( jecUncSource == "FlavorPureQuark" )
   {
-    jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), jecUncSource));
-  }
-  else
-  {
-    flavourJECCalculators_[21] = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureGluon"));
-    flavourJECCalculators_[1]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureQuark"));
-    flavourJECCalculators_[4]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureCharm"));
-    flavourJECCalculators_[5]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureBottom"));
+    matchPdgIds_.insert(1);
+    matchPdgIds_.insert(2);
+    matchPdgIds_.insert(3);
   }
  
   // Selection cuts
@@ -233,7 +230,10 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
     // JES and uncertainties
     pat::Jet jetUp = jet, jetDn = jet;
     double jecUncUp = 1, jecUncDn = 1;
-    if ( !doFlavourJECUnc_ )
+    // Do JES uncertainty only for:
+    //  - if it is FlavourPure* JEC
+    //  - or parton flavour matches to JEC flavour
+    if ( matchPdgIds_.empty() or matchPdgIds_.find(abs(jet.partonFlavour())) != matchPdgIds_.end() )
     {
       jecUncCalculator_->setJetPt(jetP4.pt());
       jecUncCalculator_->setJetEta(jetP4.eta());
@@ -241,21 +241,6 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
       jecUncCalculator_->setJetPt(jetP4.pt());
       jecUncCalculator_->setJetEta(jetP4.eta());
       jecUncDn = jecUncCalculator_->getUncertainty(false);
-    }
-    else
-    {
-      int partonId = abs(jet.partonFlavour());
-      partonId = partonId < 4 ? 1 : partonId;
-      JetCorrectionUncertainty* jecUncCal = flavourJECCalculators_[partonId];
-      if ( jecUncCal )
-      {
-        jecUncCalculator_->setJetPt(jetP4.pt());
-        jecUncCalculator_->setJetEta(jetP4.eta());
-        jecUncUp = jecUncCalculator_->getUncertainty(true);
-        jecUncCalculator_->setJetPt(jetP4.pt());
-        jecUncCalculator_->setJetEta(jetP4.eta());
-        jecUncDn = jecUncCalculator_->getUncertainty(false);
-      }
     }
 
     math::XYZTLorentzVector jetUpP4 = jetP4*(1+jecUncUp);

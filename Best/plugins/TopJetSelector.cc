@@ -53,7 +53,9 @@ private:
   edm::InputTag jetLabel_, metLabel_;
   std::vector<edm::InputTag> overlapCandLabels_;
 
+  bool doFlavourJECUnc_;
   JetCorrectionUncertainty *jecUncCalculator_;
+  std::map<int, JetCorrectionUncertainty*> flavourJECCalculators_;
   StringCutObjectSelector<pat::Jet, true>* isGoodJet_;
   double minPt_, maxEta_;
 
@@ -105,17 +107,19 @@ TopJetSelector::TopJetSelector(const edm::ParameterSet& pset)
   std::string jecUncSource = pset.getParameter<string>("uncSource");
 
   edm::FileInPath jecFile(jecUncFile);
-  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(),jecUncSource));
 
-//  edm::FileInPath jecFile("SKKU/Best/data/Summer13_V4_DATA_UncertaintySources_AK5PFchs.txt");
-//  edm::FileInPath jecFile("SKKU/Best/data/Summer13_V4_DATA_Uncertainty_AK5PFchs.txt");
-//  edm::FileInPath jecFile("SKKU/Best/data/Summer13_V4_MC_Uncertainty_AK5PFchs.txt");
-//  edm::FileInPath jecFile("SKKU/Best/data/JEC11_V13_UncertaintySources_AK5PF.txt");
- 
-//  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(),"FlavorQCD"));
-//  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(),"Total"));
-//  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(),"Flavor"));
-//  jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath()));
+  doFlavourJECUnc_ = pset.getParameter<bool>("doFlavourJECUnc");
+  if ( !doFlavourJECUnc_ )
+  {
+    jecUncCalculator_ = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), jecUncSource));
+  }
+  else
+  {
+    flavourJECCalculators_[21] = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureGluon"));
+    flavourJECCalculators_[1]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureQuark"));
+    flavourJECCalculators_[4]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureCharm"));
+    flavourJECCalculators_[5]  = new JetCorrectionUncertainty(JetCorrectorParameters(jecFile.fullPath(), "FlavorPureBottom"));
+  }
  
   // Selection cuts
   edm::ParameterSet selectionPSet = pset.getParameter<edm::ParameterSet>("selection");
@@ -228,12 +232,31 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
 
     // JES and uncertainties
     pat::Jet jetUp = jet, jetDn = jet;
-    jecUncCalculator_->setJetPt(jetP4.pt());
-    jecUncCalculator_->setJetEta(jetP4.eta());
-    const double jecUncUp = jecUncCalculator_->getUncertainty(true);
-    jecUncCalculator_->setJetPt(jetP4.pt());
-    jecUncCalculator_->setJetEta(jetP4.eta());
-    const double jecUncDn = jecUncCalculator_->getUncertainty(false);
+    double jecUncUp = 1, jecUncDn = 1;
+    if ( !doFlavourJECUnc_ )
+    {
+      jecUncCalculator_->setJetPt(jetP4.pt());
+      jecUncCalculator_->setJetEta(jetP4.eta());
+      jecUncUp = jecUncCalculator_->getUncertainty(true);
+      jecUncCalculator_->setJetPt(jetP4.pt());
+      jecUncCalculator_->setJetEta(jetP4.eta());
+      jecUncDn = jecUncCalculator_->getUncertainty(false);
+    }
+    else
+    {
+      int partonId = abs(jet.partonFlavour());
+      partonId = partonId < 4 ? 1 : partonId;
+      JetCorrectionUncertainty* jecUncCal = flavourJECCalculators_[partonId];
+      if ( jecUncCal )
+      {
+        jecUncCalculator_->setJetPt(jetP4.pt());
+        jecUncCalculator_->setJetEta(jetP4.eta());
+        jecUncUp = jecUncCalculator_->getUncertainty(true);
+        jecUncCalculator_->setJetPt(jetP4.pt());
+        jecUncCalculator_->setJetEta(jetP4.eta());
+        jecUncDn = jecUncCalculator_->getUncertainty(false);
+      }
+    }
 
     math::XYZTLorentzVector jetUpP4 = jetP4*(1+jecUncUp);
     math::XYZTLorentzVector jetDnP4 = jetP4*(1-jecUncDn);

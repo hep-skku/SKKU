@@ -23,6 +23,7 @@ cleanJets = cms.EDFilter("TopJetSelector",
     #jecFileRD = cms.string("KrAFT/RecoSelectorTools/data/JEC/Summer13_V4/Summer13_V4_DATA_Uncertainty_AK5PFchs.txt"),
     #jecFileMC = cms.string("KrAFT/RecoSelectorTools/data/JEC/Summer13_V4/Summer13_V4_MC_Uncertainty_AK5PFchs.txt"),
     #jecSource = cms.string("Total"),
+    doFlavourJECUnc = cms.bool(False),
     uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt"),
     uncSource = cms.string(""),
 

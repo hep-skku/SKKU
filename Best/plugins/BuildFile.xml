@@ -16,6 +16,7 @@
 <use name="SimDataFormats/PileupSummaryInfo"/>
 <use name="FWCore/ServiceRegistry"/>
 <use name="JetMETCorrections/Algorithms" />
+<use name="AnalysisDataFormats/TopObjects" />
 
 <use name="root" />
 <use name="lhapdf" />

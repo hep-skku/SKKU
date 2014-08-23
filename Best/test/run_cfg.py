@@ -1,35 +1,34 @@
 import FWCore.ParameterSet.Config as cms
 import os
 
-section = int(os.environ['SECTION'])
-begin = int(os.environ['BEGIN'])
-end = int(os.environ['END'])
-sample = os.environ['SAMPLE']
+#MC_flag = False
+MC_flag = True
 
 process = cms.Process("Ana")
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.load("Configuration.StandardSequences.Services_cff")
 #process.load("Configuration.StandardSequences.GeometryDB_cff")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
-#process.GlobalTag.globaltag = "START52_V12::All"
+process.GlobalTag.globaltag = "START53_V26::All"
 
-process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
-files = []
-for line in open('samples/%s.txt' % sample).readlines():
-    line = line.strip()
-    files.append(line)
-process.source.fileNames.extend(files[begin:end])
+process.source = cms.Source("PoolSource", 
+    fileNames = cms.untracked.vstring(
+       # 'file:./patRefSel_muJets.root',    
+    ),
+)
+for line in open('../samples/TTJets.txt').readlines():
 
-#print process.source.fileNames[0]
-#print process.source.fileNames[-1]
+    line = line.strip("'\", \n")
+    if '.root' not in line: continue
+    process.source.fileNames.append(line)
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string("result/result_%s_%03d.root" % (sample, section)),
+    fileName = cms.string("result_TTJets.root"),
 )
 
 process.genParticleCount = cms.EDFilter("GenParticleCountFilter",
@@ -76,28 +75,32 @@ process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 HLTPaths = {
-    "MuHad_5E33":["HLT_IsoMu20_eta2p1_TriCentralPFJet30_v*", "HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*"],
-    "MuHad_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*", "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*"],
-
-    "EleHad_5E33":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30_v*", "HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v*"],
-    "EleHad_7E33":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v*", "HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_30_20_v*", "HLT_Ele25_CaloIdVT_CaloIsoVL_TrkIdVL_TrkIsoT_TriCentralPFNoPUJet45_35_25_v*"],
-
-    "Mu_51X":["HLT_IsoMu17_eta2p1_TriCentralPFJet30_v4",],
-    "Mu_52X_GTV5":["HLT_IsoMu20_eta2p1_TriCentralPFJet30_v2",],
-    "Mu_52X_GTV9":["HLT_IsoMu17_eta2p1_TriCentralPFJet30_v2", "HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v2",],
-
-    "Ele_51X":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30_v4",],
-    "Ele_52X_GTV5":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFJet30_v8",],
-    "Ele_52X_GTV9":["HLT_Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_TriCentralPFNoPUJet30_v3",],
+    #"SingleMu_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*","HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*","HLT_IsoMu28_*",],
+    "SingleMu_7E33":["HLT_IsoMu24_eta2p1_v*",],
+    #"Mu_53X_GTV7":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v1", "HLT_IsoMu28_*",],
+    "Mu_53X_GTV7":["HLT_IsoMu24_eta2p1_v*",],
 }
-#process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
-process.hltHighLevel.HLTPaths = HLTPaths["Mu_52X_GTV9"]
+if MC_flag:
+    process.hltHighLevel.HLTPaths = HLTPaths["Mu_53X_GTV7"]
+else:
+    process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
+
+process.load("SKKU.Best.TopCleanJetSelector_cfi")
+process.load("SKKU.Best.EventWeightProducer_cfi")
+
+process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V4_DATA_UncertaintySources_AK5PFchs.txt")
+#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V4_MC_Uncertainty_AK5PFchs.txt")
+process.cleanJets.uncSource   = cms.string("Total")
+#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/JEC11_V13_UncertaintySources_AK5PF.txt")
+#process.cleanJets.uncSource   = cms.string("Total")
 
 process.event = cms.EDAnalyzer("EventTupleProducerMuon",
     doMCMatch = cms.bool(True),
     gen = cms.InputTag("genParticles"),
-    jet = cms.InputTag("loosePatJetsPF"),
+    jet = cms.InputTag("cleanJets"),
     met = cms.InputTag("patMETsPF"),
+    useEventCounter = cms.bool( True ),
+    vertex = cms.InputTag("goodOfflinePrimaryVertices"),
     lepton = cms.InputTag("goodPatMuonsPF"),
     #lepton = cms.InputTag("goodElectronsPF"),
     leptonCut = cms.string(
@@ -110,7 +113,8 @@ process.event = cms.EDAnalyzer("EventTupleProducerMuon",
         " && (chargedHadronIso+max(0.,neutralHadronIso+photonIso-0.5*puChargedHadronIso)) < 0.12*pt" # relative isolation w/ Delta beta corrections (factor 0.5)
     ),
     jetCut = cms.string(
-      " abs(eta) < 2.5 && pt > 35 && numberOfDaughters() > 1"
+      #" pt > 20 "
+      " abs(eta) < 2.5 && pt > 30 && numberOfDaughters() > 1"
       " && neutralHadronEnergyFraction() < 0.99 && neutralEmEnergyFraction() < 0.99"
       " && (abs(eta) >= 2.4 || chargedEmEnergyFraction() < 0.99)"
       " && (abs(eta) >= 2.4 || chargedHadronEnergyFraction() > 0)"
@@ -119,11 +123,47 @@ process.event = cms.EDAnalyzer("EventTupleProducerMuon",
     bTagType = cms.string("combinedSecondaryVertexBJetTags"),
 )
 
-process.p = cms.Path(
-  #  process.genParticleCount + process.genParticleTauVeto
-  #+ process.printDecay
-#  +
- process.goodOfflinePrimaryVertices
-#  + process.hltHighLevel
-  * process.event
-)
+process.eventUp = process.event.clone(
+    jet = cms.InputTag("cleanJets", "up"),
+    met = cms.InputTag("cleanJets", "up"),
+    )
+process.eventDn = process.event.clone(
+    jet = cms.InputTag("cleanJets", "dn"),
+    met = cms.InputTag("cleanJets", "dn"),
+    )
+process.eventJERUp = process.event.clone(
+    jet = cms.InputTag("cleanJets", "resUp"),
+    met = cms.InputTag("cleanJets", "resUp"),
+    )
+process.eventJERDn = process.event.clone(
+    jet = cms.InputTag("cleanJets", "resDn"),
+    met = cms.InputTag("cleanJets", "resDn"),
+    )
+
+if MC_flag:
+    process.hltHighLevel.HLTPaths = HLTPaths["Mu_53X_GTV7"]
+    process.p = cms.Path(
+        process.genParticleCount + process.genParticleTauVeto
+        + process.printDecay
+        + process.goodOfflinePrimaryVertices
+        #+ process.hltHighLevel
+        * process.PUweight
+        * process.cleanJets
+        * process.event
+        * process.eventUp
+        * process.eventDn
+        * process.eventJERUp
+        * process.eventJERDn
+        )
+else:
+    #process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
+    process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
+    process.p = cms.Path(
+        process.goodOfflinePrimaryVertices
+        + process.hltHighLevel
+        * process.cleanJets
+        * process.event
+        * process.eventUp
+        * process.eventDn
+        )
+

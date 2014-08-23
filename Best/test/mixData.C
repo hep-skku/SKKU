@@ -30,7 +30,7 @@ const double cut_drBEvt = 0.5; //for BiEvent (used to be 0.4)
 struct EventTopology
 {
   int run, lumi, event;
-  double PUweight; //PUweightup, PUweightdn
+//  double PUweight; //PUweightup, PUweightdn
   LorentzVector* lepton;
   LorentzVector* met;
   std::vector<LorentzVector>* jets;
@@ -55,7 +55,7 @@ void setBranch(TTree* tree, EventTopology& e)
   tree->SetBranchAddress("run"  , &e.run  );
   tree->SetBranchAddress("lumi" , &e.lumi );
   tree->SetBranchAddress("event", &e.event);
-  tree->SetBranchAddress("PUweight", &e.PUweight);
+//  tree->SetBranchAddress("PUweight", &e.PUweight);
 
   tree->SetBranchAddress("lepton", &e.lepton);
   tree->SetBranchAddress("met", &e.met);
@@ -67,7 +67,7 @@ void setBranch(TTree* tree, EventTopology& e)
 //  tree->SetBranchAddress("pTGen", &e.pTGen);
 }
 
-void mix(TString input = "TTJets", int cutPt = 40, int cutNb = 2)
+void mixData(TString input = "Run2012", int cutPt = 40, int cutNb = 2)
 {
   cout << endl << " ************************************************* " << endl
     //<< endl << " WARNING! PUweight = 1, so need to update PUweight " << endl
@@ -277,8 +277,8 @@ void mix(TString input = "TTJets", int cutPt = 40, int cutNb = 2)
     }
           LorentzVector jjb = jj + event1.jets->at(j3);
           const double mJJB = jjb.mass();
-          double PUweight1 = event1.PUweight; //PUweight1 = 1;
-    double SFbPUw1 = SFb*PUweight1; if(input.Contains("Run2012")) SFb = SFbPUw1 = 1;
+          //double PUweight1 = event1.PUweight; //PUweight1 = 1;
+    double SFbPUw1 = SFb;//*PUweight1; if(input.Contains("Run2012")) SFb = SFbPUw1 = 1;
           hSEvt_Mt->Fill(mJJB,SFbPUw1);
     if(input.Contains("Run2012") && jet1.pt() > cut_minLeadJetPt && jet2.pt() > cut_minLeadJetPt) hSEvt_Mt_JJHB->Fill(mJJB,SFbPUw1);
 
@@ -415,10 +415,10 @@ void mix(TString input = "TTJets", int cutPt = 40, int cutNb = 2)
 
           LorentzVector jjb = jj + event2.jets->at(j3);
           const double mJJB = jjb.mass();
-          double PUweight1 = event1.PUweight;
-          double PUweight2 = event2.PUweight;
-          double PUweight3 = PUweight1*PUweight2; //PUweight3 = 1;
-    double SFbPUw3 = SFb2*PUweight3; if(input.Contains("Run2012")) SFb2 = SFbPUw3 = 1;
+          //double PUweight1 = event1.PUweight;
+          //double PUweight2 = event2.PUweight;
+          //double PUweight3 = PUweight1*PUweight2; //PUweight3 = 1;
+    double SFbPUw3 = SFb2;//*PUweight3; if(input.Contains("Run2012")) SFb2 = SFbPUw3 = 1;
           hBEvt_Mt->Fill(mJJB,SFbPUw3);
 
     if(input.Contains("Run2012") && jet1.pt() > cut_minLeadJetPt && jet2.pt() > cut_minLeadJetPt) hBEvt_Mt_JJHB->Fill(mJJB,SFbPUw3);

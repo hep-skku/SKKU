@@ -72,11 +72,13 @@ private:
 private:
   void getJERFactor(const double jetEta, double& cJER, double& cJERUp, double& cJERDn)
   {
-    if      ( jetEta < 0.5 ) { cJER = 1.052; cJERUp = 1.115; cJERDn = 0.990; }
-    else if ( jetEta < 1.1 ) { cJER = 1.057; cJERUp = 1.114; cJERDn = 1.001; }
-    else if ( jetEta < 1.7 ) { cJER = 1.096; cJERUp = 1.161; cJERDn = 1.032; }
-    else if ( jetEta < 2.3 ) { cJER = 1.134; cJERUp = 1.228; cJERDn = 1.042; }
-    else if ( jetEta < 5.0 ) { cJER = 1.288; cJERUp = 1.488; cJERDn = 1.089; }
+    if      ( jetEta < 0.5 ) { cJER = 1.079; cJERDn = 1.053; cJERUp = 1.105; }
+    else if ( jetEta < 1.1 ) { cJER = 1.099; cJERDn = 1.071; cJERUp = 1.127; }
+    else if ( jetEta < 1.7 ) { cJER = 1.121; cJERDn = 1.092; cJERUp = 1.150; }
+    else if ( jetEta < 2.3 ) { cJER = 1.208; cJERDn = 1.162; cJERUp = 1.254; }
+    else if ( jetEta < 2.8 ) { cJER = 1.254; cJERDn = 1.192; cJERUp = 1.316; }
+    else if ( jetEta < 3.2 ) { cJER = 1.395; cJERDn = 1.332; cJERUp = 1.458; }
+    else if ( jetEta < 5.0 ) { cJER = 1.056; cJERDn = 0.865; cJERUp = 1.247; }
     else { cJER = cJERUp = cJERDn = 1; }
   }
   bool isInAcceptance(const pat::Jet& jetP4)

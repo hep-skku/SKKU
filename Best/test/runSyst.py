@@ -142,7 +142,7 @@ for syst in sorted(errors.keys()):
         errUp = max(errsAUp[iBin], errsBUp[iBin])
         errDn = max(errsADn[iBin], errsBDn[iBin])
         # Use symmetric error if the error is only one side
-        if not isAsymm:
+        if not isAsymm or errUp == 0 or errDn == 0:
             errUp = errDn = max(errUp, errDn)
         errsUp[iBin] += errUp**2
         errsDn[iBin] += errDn**2
@@ -154,7 +154,7 @@ errsDn = [sqrt(x) for x in errsDn]
 xbins = array('d', [x[1] for x in result0])
 if len(xbins) != result0: xbins.append(result0[-1][1])
 h = TH1F("h", "h", len(xbins)-1, xbins)
-grpSyst  = TGraphAsymmErrors()
+grpStat = TGraphAsymmErrors()
 grpTotal = TGraphAsymmErrors()
 for iBin in range(len(result0)):
     x, xDn, xUp, y, eyDn0, eyUp0 = result0[iBin]
@@ -163,12 +163,13 @@ for iBin in range(len(result0)):
     #print "%d: %f + %f - %f (stat.) +%f -%f (syst.)" % (iBin, y, eyUp0, eyDn0, eyUp, eyDn)
     h.SetBinContent(iBin+1, y)
     h.SetBinError(iBin+1, max(eyDn0, eyUp0))
-    grpSyst.SetPoint(iBin, x, y)
-    grpSyst.SetPointError(iBin, x-xDn, xUp-x, eyDn, eyUp)
+    grpStat.SetPoint(iBin, x, y)
+    grpStat.SetPointError(iBin, x-xDn, xUp-x, eyDn0, eyUp0)
+    #grpSyst.SetPointError(iBin, x-xDn, xUp-x, eyDn, eyUp)
     grpTotal.SetPoint(iBin, x, y)
     grpTotal.SetPointError(iBin, x-xDn, xUp-x, eyDn0+eyDn, eyUp0+eyUp)
 
-def drawRatioPlot(h, grpTotal, grpSyst=None):
+def drawRatioPlot(h, grpTotal, grpStat=None):
     c = TCanvas("c", "c", 500, 600)
     c.Divide(1,2)
 
@@ -181,11 +182,10 @@ def drawRatioPlot(h, grpTotal, grpSyst=None):
     h.GetYaxis().SetTitleOffset(1.70)
     h.GetYaxis().SetLabelSize(0.05)
     h.Draw()
-    if grpSyst != None:
-        grpSyst.SetFillColor(kYellow+1)
-        grpSyst.SetFillStyle(3001)
-        grpSyst.Draw("pz2")
-    grpTotal.Draw("pz")
+    grpTotal.SetFillColor(kYellow+1)
+    grpTotal.SetFillStyle(3001)
+    grpTotal.Draw("pz2")
+    if grpStat != None: grpStat.Draw("p")
 
     pad2 = c.cd(2)
     pad2.SetPad(0, 0, 1, 0.3)
@@ -207,7 +207,9 @@ def drawRatioPlot(h, grpTotal, grpSyst=None):
     hRatio.SetMaximum(1.5)
 
     grpRatioTotal = TGraphAsymmErrors()
-    if grpSyst != None: grpRatioSyst = TGraphAsymmErrors()
+    grpRatioTotal.SetFillColor(kYellow+1)
+    grpRatioTotal.SetFillStyle(3001)
+    if grpStat != None: grpRatioStat = TGraphAsymmErrors()
     for i in range(grpTotal.GetN()):
         y0 = h.GetBinContent(i+1)
         x = grpTotal.GetX()[i]
@@ -224,36 +226,34 @@ def drawRatioPlot(h, grpTotal, grpSyst=None):
         grpRatioTotal.SetPoint(i, x, r)
         grpRatioTotal.SetPointError(i, exDn, exUp, erDn, erUp)
 
-    grpRatioSyst = TGraphAsymmErrors()
-    grpRatioSyst.SetFillColor(kYellow+1)
-    grpRatioSyst.SetFillStyle(3001)
-    if grpSyst != None:
-        for i in range(grpSyst.GetN()):
+    grpRatioStat = TGraphAsymmErrors()
+    if grpStat != None:
+        for i in range(grpStat.GetN()):
             y0 = h.GetBinContent(i+1)
-            x = grpSyst.GetX()[i]
-            y = grpSyst.GetY()[i]
+            x = grpStat.GetX()[i]
+            y = grpStat.GetY()[i]
             if y > 0:
                 r = y0/y
-                erDn = r*grpSyst.GetEYlow()[i]/y
-                erUp = r*grpSyst.GetEYhigh()[i]/y
+                erDn = r*h.GetBinError(i+1)/y0
+                erUp = r*h.GetBinError(i+1)/y0
             else:
                 r, erDn, erUp = 0, 0, 1e9
-            exDn = grpSyst.GetEXlow()[i]
-            exUp = grpSyst.GetEXhigh()[i]
+            exDn = grpStat.GetEXlow()[i]
+            exUp = grpStat.GetEXhigh()[i]
 
-            grpRatioSyst.SetPoint(i, x, r)
-            grpRatioSyst.SetPointError(i, exDn, exUp, erDn, erUp)
+            grpRatioStat.SetPoint(i, x, r)
+            grpRatioStat.SetPointError(i, exDn, exUp, erDn, erUp)
 
     hRatio.Draw()
-    grpRatioTotal.Draw("pz0")
-    if grpRatioSyst != None: grpRatioSyst.Draw("pz02")
+    grpRatioTotal.Draw("pz02")
+    if grpRatioStat != None: grpRatioStat.Draw("pz0")
 
     c.Update()
 
     grpRatioTotal.SetEditable(False)
-    grpRatioSyst.SetEditable(False)
-    return [c, hRatio, grpRatioTotal, grpRatioSyst]
+    grpRatioStat.SetEditable(False)
+    return [c, hRatio, grpRatioTotal, grpRatioStat]
 
 grpTotal.SetEditable(False)
-grpSyst.SetEditable(False)
-c = drawRatioPlot(h, grpTotal, grpSyst)
+grpStat.SetEditable(False)
+c = drawRatioPlot(h, grpTotal, grpStat)

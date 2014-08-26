@@ -66,8 +66,8 @@ systs = {
 }
 
 combineIgnore = []
-combineBySquareSum = ["bJES",]
-combineByScalarSum = []
+combineByScalarSum = ["bJES"]
+combineByMaximum = []
 
 # Perform analysis for each files and get results
 # Results should be in the format of [(x, xLo, xHi, y, yErrLo, yErrHi), (), (), ...]
@@ -77,6 +77,11 @@ errors = {}
 for syst in systs:
     # Store combined systematic uncertainty for this uncertainty group
     errs = [0]*len(result0)
+
+    if   syst in combineIgnore: combineBy = 'ignore'
+    elif syst in combineByScalarSum: combineBy = 'scalarSum'
+    elif syst in combineByMaximum: combineBy = 'maximum'
+    else: combineBy = 'squareSum'
 
     # Loop over all systematic variations in this group
     for fileName in systs[syst]:
@@ -96,12 +101,15 @@ for syst in systs:
                 else: dy = -abs(eyLo)
 
             # Combine with previous one depending on combine mode
-            if syst in combineIgnore: pass
-            elif syst in combineBySquareSum: errs[iBin] += dy**2
-            elif syst in combineByScalarSum: errs[iBin] += abs(dy)
-            else: errs[iBin] = max(errs[iBin], abs(dy))
+            if   combineBy == 'ignore': pass
+            elif combineBy == 'scalarSum': errs[iBin] += abs(dy)
+            elif combineBy == 'maximum': errs[iBin] = max(errs[iBin], abs(dy))
+            elif combineBy == 'squareSum' : errs[iBin] += dy**2
+            else:
+                print "!!! FATAL: combine method is wrong"
+                os.exit(1)
     # Take square root if this is square-sum mode
-    if syst in combineBySquareSum: errs = [sqrt(x) for x in errs]
+    if combineBy == 'squareSum': errs = [sqrt(x) for x in errs]
 
     errors[syst] = errs
 

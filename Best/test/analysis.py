@@ -8,6 +8,9 @@ def analyze(fileName):
     h = f.Get("SEvt/hMt")
     h.Sumw2()
     h.Scale(1./h.Integral())
+    #if 'central_non' in fileName:
+    #    h.Scale(1e-8) # Scale by lumi/nEvents
+
     #h = f.Get("SEvt/hnjets")
     result = []
     for i in range(1, h.GetNbinsX()+1):

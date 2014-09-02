@@ -8,6 +8,14 @@ cleanJets = cms.EDFilter("TopJetSelector",
 
     jet = cms.InputTag("veryLoosePatJetsPF"),
     met = cms.InputTag("patMETsPF"),
+    #rho = cms.InputTag("RHORHORHORHO"),
+    vertex = cms.InputTag("goodOfflinePrimaryVertices"),
+    jecFileNames = cms.vstring(
+      "SKKU/Best/data/Summer13_V4/Summer13_V4_MC_txts_fromDB/Summer13_V4_MC_L1FastJet_AK5PFchs.txt",
+      "SKKU/Best/data/Summer13_V4/Summer13_V4_MC_txts_fromDB/Summer13_V4_MC_L2Relative_AK5PFchs.txt",
+      "SKKU/Best/data/Summer13_V4/Summer13_V4_MC_txts_fromDB/Summer13_V4_MC_L3Absolute_AK5PFchs.txt",
+    ),
+
     selection = cms.PSet(
         cut = cms.string(""),
         minPt = cms.double(30),

@@ -93,7 +93,8 @@ if MC_flag:
 else:
     process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
 
-process.load("SKKU.Best.TopCleanJetSelector_cfi")
+process.load("SKKU.Best.TopCleanJetSelectorMC_cfi")
+#process.load("SKKU.Best.TopCleanJetSelectorRD_cfi")
 process.load("SKKU.Best.EventWeightProducer_cfi")
 #process.load("SKKU.Best.pdfWeight_cff")
 

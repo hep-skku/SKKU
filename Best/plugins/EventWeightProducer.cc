@@ -50,7 +50,7 @@ void EventWeightProducer::produce(edm::Event& event, const edm::EventSetup& es)
   double wplus = 1.0;
   double wminus = 1.0;
   float sum_nvtx = 0;
-  float ave_nvtx = 0;
+  //float ave_nvtx = 0;
 
   if( PupInfo.isValid()){
     for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
@@ -67,7 +67,7 @@ void EventWeightProducer::produce(edm::Event& event, const edm::EventSetup& es)
 
     }
 
-    ave_nvtx = sum_nvtx/3.;
+    //ave_nvtx = sum_nvtx/3.;
 
     win = LumiWeights_.weight( npvin );
     w = LumiWeights_.weight( npv );

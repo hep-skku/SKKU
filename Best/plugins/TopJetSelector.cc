@@ -106,18 +106,23 @@ TopJetSelector::TopJetSelector(const edm::ParameterSet& pset)
   jetLabel_ = pset.getParameter<edm::InputTag>("jet");
   metLabel_ = pset.getParameter<edm::InputTag>("met");
 
-  rhoLabel_ = pset.getParameter<edm::InputTag>("rho");
-  vertexLabel_ = pset.getParameter<edm::InputTag>("vertex");
-
-  vector<string> jecFileNames = pset.getParameter<vector<string> >("jecFileNames");
-  vector<JetCorrectorParameters> jecParams;
-  for ( int i=0, n=jecFileNames.size(); i<n; ++i )
+  jetCorr_ = 0;
+  const bool redoJES = pset.getParameter<bool>("redoJES");
+  if ( redoJES )
   {
-    edm::FileInPath jecFile(jecFileNames[i]);
-    JetCorrectorParameters jecParam(jecFile.fullPath());
-    jecParams.push_back(jecParam);
+    rhoLabel_ = pset.getParameter<edm::InputTag>("rho");
+    vertexLabel_ = pset.getParameter<edm::InputTag>("vertex");
+
+    vector<string> jecFileNames = pset.getParameter<vector<string> >("jecFileNames");
+    vector<JetCorrectorParameters> jecParams;
+    for ( int i=0, n=jecFileNames.size(); i<n; ++i )
+    {
+      edm::FileInPath jecFile(jecFileNames[i]);
+      JetCorrectorParameters jecParam(jecFile.fullPath());
+      jecParams.push_back(jecParam);
+    }
+    jetCorr_ = new FactorizedJetCorrector(jecParams);
   }
-  jetCorr_ = new FactorizedJetCorrector(jecParams);
 
   std::string jecUncFile   = pset.getParameter<string>("uncFilename");
   std::string jecUncSource = pset.getParameter<string>("uncSource");
@@ -194,13 +199,18 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
   edm::Handle<std::vector<pat::MET> > metHandle;
   event.getByLabel(metLabel_, metHandle);
 
-  edm::Handle<double> rhoHandle;
-  event.getByLabel(rhoLabel_, rhoHandle);
-  const double rho = *(rhoHandle.product());
+  const double rho = 0;
+  const int nVertex = 0;
+  if ( jetCorr_ )
+  {
+    edm::Handle<double> rhoHandle;
+    event.getByLabel(rhoLabel_, rhoHandle);
+    const_cast<double&>(rho) = *(rhoHandle.product());
 
-  edm::Handle<reco::VertexCollection> vertexHandle;
-  event.getByLabel(vertexLabel_, vertexHandle);
-  const int nVertex = vertexHandle->size();
+    edm::Handle<reco::VertexCollection> vertexHandle;
+    event.getByLabel(vertexLabel_, vertexHandle);
+    const_cast<int&>(nVertex) = vertexHandle->size();
+  }
 
   std::auto_ptr<std::vector<pat::Jet> > corrJets(new std::vector<pat::Jet>());
   std::auto_ptr<std::vector<pat::Jet> > corrJetsUp(new std::vector<pat::Jet>());
@@ -243,17 +253,21 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
     // Recalculated JEC with given JEC params : Code taken from KoPFA
     pat::Jet jet = jetHandle->at(i);
     const reco::Candidate::LorentzVector rawJetP4 = jet.correctedP4(0);
-    jet.scaleEnergy(jet.jecFactor(0)); // set it to uncorrected jet energy
 
-    jetCorr_->setJetEta(rawJetP4.eta());
-    jetCorr_->setJetPt(rawJetP4.pt());
-    jetCorr_->setJetE(rawJetP4.energy());
-    jetCorr_->setJetA(jet.jetArea());
-    jetCorr_->setRho(rho);
-    jetCorr_->setNPV(nVertex);
+    if ( jetCorr_ )
+    {
+      jet.scaleEnergy(jet.jecFactor(0)); // set it to uncorrected jet energy
 
-    const double jecFactor = jetCorr_->getCorrection();
-    jet.scaleEnergy(jecFactor);
+      jetCorr_->setJetEta(rawJetP4.eta());
+      jetCorr_->setJetPt(rawJetP4.pt());
+      jetCorr_->setJetE(rawJetP4.energy());
+      jetCorr_->setJetA(jet.jetArea());
+      jetCorr_->setRho(rho);
+      jetCorr_->setNPV(nVertex);
+
+      const double jecFactor = jetCorr_->getCorrection();
+      jet.scaleEnergy(jecFactor);
+    }
 
     if ( !(*isGoodJet_)(jet) ) continue;
 

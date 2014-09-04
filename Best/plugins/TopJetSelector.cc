@@ -106,7 +106,7 @@ TopJetSelector::TopJetSelector(const edm::ParameterSet& pset)
   jetLabel_ = pset.getParameter<edm::InputTag>("jet");
   metLabel_ = pset.getParameter<edm::InputTag>("met");
 
-  //rhoLabel_ = pset.getParameter<edm::InputTag>("rho");
+  rhoLabel_ = pset.getParameter<edm::InputTag>("rho");
   vertexLabel_ = pset.getParameter<edm::InputTag>("vertex");
 
   vector<string> jecFileNames = pset.getParameter<vector<string> >("jecFileNames");
@@ -194,9 +194,9 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
   edm::Handle<std::vector<pat::MET> > metHandle;
   event.getByLabel(metLabel_, metHandle);
 
-  //edm::Handle<double> rhoHandle;
-  //event.getByLabel(rhoLabel_, rhoHandle);
-  //const double rho = *(rhoHandle.product());
+  edm::Handle<double> rhoHandle;
+  event.getByLabel(rhoLabel_, rhoHandle);
+  const double rho = *(rhoHandle.product());
 
   edm::Handle<reco::VertexCollection> vertexHandle;
   event.getByLabel(vertexLabel_, vertexHandle);
@@ -249,7 +249,7 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
     jetCorr_->setJetPt(rawJetP4.pt());
     jetCorr_->setJetE(rawJetP4.energy());
     jetCorr_->setJetA(jet.jetArea());
-    //jetCorr_->setRho(rho);
+    jetCorr_->setRho(rho);
     jetCorr_->setNPV(nVertex);
 
     const double jecFactor = jetCorr_->getCorrection();
@@ -292,8 +292,6 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
       const reco::GenJet* genJet = jet.genJet();
       if ( genJet and genJet->pt() > 10 )
       {
-        const math::XYZTLorentzVector& rawJetP4 = jet.correctedP4(0);
-
         const double genJetPt = genJet->pt();
         const double jetPt = jetP4.pt();
         const double dPt = jetPt-genJetPt;

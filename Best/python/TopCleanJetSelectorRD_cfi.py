@@ -8,7 +8,7 @@ cleanJets = cms.EDFilter("TopJetSelector",
 
     jet = cms.InputTag("veryLoosePatJetsPF"),
     met = cms.InputTag("patMETsPF"),
-    #rho = cms.InputTag("RHORHORHORHO"),
+    rho = cms.InputTag("ak5PFJets", "rho"),
     vertex = cms.InputTag("goodOfflinePrimaryVertices"),
     jecFileNames = cms.vstring(
         "SKKU/Best/data/Summer13_V4/Summer13_V4_Data_txts_fromDB/Summer13_V4_Data_L1FastJet_AK5PFchs.txt",

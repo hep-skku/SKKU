@@ -26,9 +26,9 @@ from TopQuarkAnalysis.Configuration.patRefSel_PF2PAT import *
 ### Trigger selection
 
 # HLT selection
-triggerSelectionDataRelVals = 'HLT_IsoMu17_eta2p1_TriCentralJet30_v*' # 2011B RelVals
-triggerSelectionData        = 'HLT_Iso10Mu20_eta2p1_TriCentralPFJet30_v*'
-triggerSelectionMC          = 'HLT_IsoMu20_eta2p1_TriCentralPFJet30_v*'
+triggerSelectionDataRelVals = 'HLT_IsoMu17_eta2p1_TriCentralPFJet30_v*' # 2012A RelVals
+triggerSelectionData        = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*'
+triggerSelectionMC          = 'HLT_*' # not recommended
 
 ### Muon selection
 
@@ -77,8 +77,7 @@ tightJetCut     = 'pt > 45.' # transverse momentum (leading jets)
 electronCut  =     'pt > 20.'                                                                              # transverse energy
 electronCut += ' && abs(eta) < 2.5'                                                                        # pseudo-rapisity range
 electronCut += ' && electronID("mvaTrigV0") > 0.'                                                          # MVA electrons ID
-#electronCut += ' && (chargedHadronIso+max(0.,neutralHadronIso)+photonIso-0.5*puChargedHadronIso)/et < 0.2' # relative isolation with Delta beta corrections
-electronCut += ' && (chargedHadronIso+max(0.,neutralHadronIso+photonIso-0.5*puChargedHadronIso))/et < 0.2' # relative isolation with Delta beta corrections
+electronCut += ' && (chargedHadronIso+max(0.,neutralHadronIso)+photonIso-0.5*puChargedHadronIso)/et < 0.2' # relative isolation with Delta beta corrections
 
 ### ------------------------------------------------------------------------ ###
 
@@ -86,6 +85,6 @@ electronCut += ' && (chargedHadronIso+max(0.,neutralHadronIso+photonIso-0.5*puCh
 ### Trigger matching
 
 # Trigger object selection
-triggerObjectSelectionDataRelVals = 'type("TriggerMuon") && ( path("HLT_IsoMu17_eta2p1_TriCentralJet30_v*") )' # 2011B RelVals
-triggerObjectSelectionData        = 'type("TriggerMuon") && ( path("HLT_Iso10Mu20_eta2p1_TriCentralPFJet30_v*") )'
-triggerObjectSelectionMC          = 'type("TriggerMuon") && ( path("HLT_IsoMu20_eta2p1_TriCentralPFJet30_v*") )'
+triggerObjectSelectionDataRelVals = 'type("TriggerMuon") && ( path("HLT_IsoMu17_eta2p1_TriCentralPFJet30_v*") )' # 2012A RelVals
+triggerObjectSelectionData        = 'type("TriggerMuon") && ( path("HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*") )'
+triggerObjectSelectionMC          = 'type("TriggerMuon") && ( path("HLT_*") )' # not recommended

@@ -199,13 +199,13 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
   edm::Handle<std::vector<pat::MET> > metHandle;
   event.getByLabel(metLabel_, metHandle);
 
-  const double rho = 0;
-  const int nVertex = 0;
+  double rho = 0;
+  int nVertex = 0;
   if ( jetCorr_ )
   {
     edm::Handle<double> rhoHandle;
     event.getByLabel(rhoLabel_, rhoHandle);
-    const_cast<double&>(rho) = *(rhoHandle.product());
+    rho = *(rhoHandle.product());
 
     edm::Handle<reco::VertexCollection> vertexHandle;
     event.getByLabel(vertexLabel_, vertexHandle);
@@ -256,8 +256,6 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
 
     if ( jetCorr_ )
     {
-      jet.scaleEnergy(jet.jecFactor(0)); // set it to uncorrected jet energy
-
       jetCorr_->setJetEta(rawJetP4.eta());
       jetCorr_->setJetPt(rawJetP4.pt());
       jetCorr_->setJetE(rawJetP4.energy());
@@ -265,8 +263,10 @@ bool TopJetSelector::filter(edm::Event& event, const edm::EventSetup& eventSetup
       jetCorr_->setRho(rho);
       jetCorr_->setNPV(nVertex);
 
-      const double jecFactor = jetCorr_->getCorrection();
-      jet.scaleEnergy(jecFactor);
+      // Rescale JEC to the new JEC factors
+      // Warning : do not use sub corrections. only last JEC factor is one to be used.
+      const double rescaleJEC = jet.jecFactor(0)*jetCorr_->getCorrection();
+      jet.scaleEnergy(rescaleJEC); 
     }
 
     if ( !(*isGoodJet_)(jet) ) continue;

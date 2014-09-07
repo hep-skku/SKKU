@@ -9,7 +9,7 @@ cleanJets = cms.EDFilter("TopJetSelector",
     jet = cms.InputTag("veryLoosePatJetsPF"),
     met = cms.InputTag("patMETsPF"),
 
-    redoJES = cms.bool(True),
+    redoJES = cms.bool(False),
     rho = cms.InputTag("ak5PFJets", "rho"),
     vertex = cms.InputTag("goodOfflinePrimaryVertices"),
     jecFileNames = cms.vstring(
@@ -33,7 +33,7 @@ cleanJets = cms.EDFilter("TopJetSelector",
     #jecFileRD = cms.string("KrAFT/RecoSelectorTools/data/JEC/Summer13_V4/Summer13_V4_DATA_Uncertainty_AK5PFchs.txt"),
     #jecFileMC = cms.string("KrAFT/RecoSelectorTools/data/JEC/Summer13_V4/Summer13_V4_MC_Uncertainty_AK5PFchs.txt"),
     #jecSource = cms.string("Total"),
-    uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt"),
+    uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt"),
     uncSource = cms.string(""),
 
     minNumber = cms.uint32(0),

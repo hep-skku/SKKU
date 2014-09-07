@@ -9,14 +9,15 @@ cleanJets = cms.EDFilter("TopJetSelector",
     jet = cms.InputTag("veryLoosePatJetsPF"),
     met = cms.InputTag("patMETsPF"),
 
-    redoJES = cms.bool(False),
-    rho = cms.InputTag("ak5PFJets", "rho"),
+    redoJES = cms.bool(True),
+    #rho = cms.InputTag("ak5PFJets", "rho"),
+    rho = cms.InputTag("kt6PFJets", "rho"),
     vertex = cms.InputTag("goodOfflinePrimaryVertices"),
     jecFileNames = cms.vstring(
-        "SKKU/Best/data/Summer13_V4/Summer13_V4_Data_txts_fromDB/Summer13_V4_Data_L1FastJet_AK5PFchs.txt",
-        "SKKU/Best/data/Summer13_V4/Summer13_V4_Data_txts_fromDB/Summer13_V4_Data_L2Relative_AK5PFchs.txt",
-        "SKKU/Best/data/Summer13_V4/Summer13_V4_Data_txts_fromDB/Summer13_V4_Data_L3Absolute_AK5PFchs.txt",
-        "SKKU/Best/data/Summer13_V4/Summer13_V4_Data_txts_fromDB/Summer13_V4_Data_L2L3Residual_AK5PFchs.txt",
+        "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L1FastJet_AK5PFchs.txt",
+        "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2Relative_AK5PFchs.txt",
+        "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L3Absolute_AK5PFchs.txt",
+        "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2L3Residual_AK5PFchs.txt",
     ),
 
     selection = cms.PSet(

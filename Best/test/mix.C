@@ -29,6 +29,8 @@ const double cut_maxMuonEta = 0.8;
 
 //const int cut_minNBjet = 2;
 const double cut_bTag = 0.679; //medium
+//const double cut_bTag = 0.898; //Tight
+//const double cut_bTag = 0.244; //Low
 
 const double cut_drSEvt = 0.4; //for SameEvent
 const double cut_drBEvt = 0.5; //for BiEvent (used to be 0.4)
@@ -86,11 +88,13 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
     //<< endl << " WARNING! PUweight = 1, so need to update PUweight " << endl
     << endl << " charge = " << cutQ << endl
     << endl << " maxJetEta = " <<cut_maxJetEta<<" (used to be 2.5) " << endl
+    << endl << " cut_bTag = " << cut_bTag << ", cutNb = " << cutNb <<endl
     << endl << " ************************************************* " << endl << endl; 
   const char* sample = input;
   const int cut_minJetPt = cutPt;
   const int cut_minNBjet = cutNb;
   const int cut_minNJet = cutNj;
+  //const int cut_minNLightJet = cutNj - cutNb; if(cut_minNLightJet<=0) { cout << "Error! checking nLightJets requirement." << endl; return; }
 
   TFile* file1 = TFile::Open(Form("../ntuples/result_%s.root", sample));
   TFile* file2 = TFile::Open(Form("../ntuples/result_%s.root", sample));
@@ -106,6 +110,8 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
 
   //TFile* outFile = TFile::Open(Form("hgood/hgood_%s_pt%d_nj%d_nb%d_lq%d.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet, cutQ), "RECREATE");
   //TFile* outFile = TFile::Open(Form("ehkwon_hist/hist_%s_pt%d_nj%d_nb%d.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet), "RECREATE");
+  //TFile* outFile = TFile::Open(Form("hist_%s_pt%d_nj%d_nb%d_lq%d_nlj3_lessbin.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet, cutQ), "RECREATE");
+  //TFile* outFile = TFile::Open(Form("hist_%s_pt%d_nj%d_nb%d_lq%d_nlj3_CSVT.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet, cutQ), "RECREATE");
   TFile* outFile = TFile::Open(Form("hist_%s_pt%d_nj%d_nb%d_lq%d_nlj3.root", sample, cut_minJetPt, cut_minNJet, cut_minNBjet, cutQ), "RECREATE");
   TDirectory* dirSEvt = outFile->mkdir("SEvt");
   TDirectory* dirBEvt = outFile->mkdir("BEvt");
@@ -125,6 +131,7 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
 
   const int nbin = 100;
   const int nbinR = 50;
+  cout << "nBin: " << nbin << ", nBinR: " << nbinR << endl;
   const TString axisTitleMw = ";Dijet mass (GeV/c^{2});Events per 5GeV/c^{2}";
   const TString axisTitleMt = ";Three jet mass (GeV/c^{2});Events per 10GeV/c^{2}";
   //const TString axisTitleMt = ";R32;Events";
@@ -176,10 +183,19 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
   TH1F* hSEvt_B_phi = new TH1F("hbphi","hbphi",100,-TMath::Pi(),TMath::Pi());
   TH1F* hSEvt_B_pt = new TH1F("hbpt","hbpt",100,30,330);
 
+  double jet2_ptbins[48]={0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200,210,220,230,240,260,280,300};
   TH1F* hSEvt_Mu_pt = new TH1F("Mu_pt","Mu_pt",100,0,500);
   TH1F* hSEvt_Mu_eta = new TH1F("Mu_eta","Mu_eta",25, -2.5, 2.5);
   TH1F* hSEvt_LJets_pt = new TH1F("hSEvt_LJets_pt","hSEvt_LJets_pt",100,0,500);
-  TH1F* hSEvt_LJets_eta = new TH1F("hSEvt_LJets_eta","hSEvt_LJets_eta",50,-2.5,2.5);
+  TH1F* hSEvt_LJets_eta = new TH1F("hSEvt_LJets_eta","hSEvt_LJets_eta",24,-2.4,2.4);
+  TH1F* hSEvt_L2Jets_pt = new TH1F("hSEvt_L2Jets_pt","hSEvt_L2Jets_pt",100,0,500);
+  TH1F* hSEvt_L2Jets_pt1 = new TH1F("hSEvt_L2Jets_pt1","hSEvt_L2Jets_pt1",47,jet2_ptbins);
+  TH1F* hSEvt_L2Jets_eta = new TH1F("hSEvt_L2Jets_eta","hSEvt_L2Jets_eta",24,-2.4,2.4);
+  TH1F* hSEvt_L3Jets_pt = new TH1F("hSEvt_L3Jets_pt","hSEvt_L3Jets_pt",100,0,500);
+  TH1F* hSEvt_L3Jets_eta = new TH1F("hSEvt_L3Jets_eta","hSEvt_L3Jets_eta",24,-2.4,2.4);
+  TH1F* hSEvt_L4Jets_pt = new TH1F("hSEvt_L4Jets_pt","hSEvt_L4Jets_pt",100,0,500);
+  TH1F* hSEvt_L4Jets_eta = new TH1F("hSEvt_L4Jets_eta","hSEvt_L4Jets_eta",24,-2.4,2.4);
+
 
   TH1F* hSEvt_pt_Mw = new TH1F("hMw_pt_Mw", "J+J",100,0,500);
   TH1F* hSEvt_eta_Mw = new TH1F("hMw_eta_Mw", "J+J",100,-3,3);
@@ -498,8 +514,9 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
         else ++nLightJets1;
       }
     }
+    //if ( nJets1 < cut_minNJet || nBjets1 < cut_minNBjet || nLightJets1 < cut_minNLightJet ) continue;
     if ( nJets1 < cut_minNJet || nBjets1 < cut_minNBjet ) continue;
-    if ( nLightJets1 < 2 || nBjets1 < 2 ) continue;
+    //if ( nLightJets1 < 2 || nBjets1 < 2 ) continue;
     //    if ( nLightJets1 != 2 || nBjets1 != 2 ) continue;   
     //    if ( abs(lepton1.eta()) >= cut_maxMuonEta ) continue;
     //    if ( abs(lepton1.eta()) < cut_maxMuonEta ) continue;
@@ -540,8 +557,14 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
       //if ( mcBit1 == 1 or mcBit1 == 2 ) continue;
       //if ( mcBit1&3 ) continue;
       if ( bTag1 > cut_bTag ) continue;
-      hSEvt_LJets_pt->Fill(event1.jets->at(0).pt(),weight1); 
-      hSEvt_LJets_eta->Fill(event1.jets->at(0).eta(),weight1); 
+      hSEvt_LJets_pt->Fill(event1.jets->at(0).pt(),weight1);  
+      hSEvt_LJets_eta->Fill(event1.jets->at(0).eta(),weight1);
+      hSEvt_L2Jets_pt->Fill(event1.jets->at(1).pt(),weight1);hSEvt_L2Jets_pt1->Fill(event1.jets->at(1).pt(),weight1);
+      hSEvt_L2Jets_eta->Fill(event1.jets->at(1).eta(),weight1);
+      hSEvt_L3Jets_pt->Fill(event1.jets->at(2).pt(),weight1);
+      hSEvt_L3Jets_eta->Fill(event1.jets->at(2).eta(),weight1);
+      hSEvt_L4Jets_pt->Fill(event1.jets->at(3).pt(),weight1);
+      hSEvt_L4Jets_eta->Fill(event1.jets->at(3).eta(),weight1); 
       //      if (jet1.pt() > cut_minLeadJetPt) ++nLeadJetsInSameEvt;
       //      if (jet1.pt() > cut_minLeadJetPt) { hSEvt_LJets_pt->Fill(jet1.pt(),weight1); hSEvt_LJets_eta->Fill(jet1.eta(),weight1);} 
 
@@ -856,8 +879,9 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
           else ++nLightJets2;
         }
       }
+      //if ( nJets2 < cut_minNJet || nBjets2 < cut_minNBjet || nLightJets2 < cut_minNLightJet ) continue;
       if ( nJets2 < cut_minNJet || nBjets2 < cut_minNBjet ) continue;
-      if ( nLightJets2 < 2 || nBjets2 < 2 ) continue;
+      //if ( nLightJets2 < 2 || nBjets2 < 2 ) continue;
       //      if ( nLightJets2 != 2 || nBjets2 != 2 ) continue;
       //      if ( abs(lepton2.eta()) >= cut_maxMuonEta ) continue;
       //      if ( abs(lepton2.eta()) < cut_maxMuonEta ) continue;
@@ -903,7 +927,7 @@ void mix(TString input = "MSDecays_172", int cutNj = 4, int cutPt = 35, int cutN
         //if ( DeltaR(jet2, lepton1) < 0.3 ) continue;
         if ( jet2.pt() < cut_minJetPt or abs(jet2.eta()) > cut_maxJetEta ) continue;
         //if ( jet2.pt() < cut_minLeadJetPt or abs(jet2.eta()) > cut_maxJetEta ) continue;
-        if ( j1 == j2 ) continue;
+        //if ( j1 == j2 ) continue;
         if ( bTag2 > cut_bTag ) continue;
         //if ( mcBit2&3 ) continue;
         //if ( mcBit2 == 1 or mcBit2 == 2 ) continue;

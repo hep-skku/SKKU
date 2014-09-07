@@ -11,7 +11,20 @@ import FWCore.ParameterSet.Config as cms
 # setup 'standard' options
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing ('standard')
-options.register('runOnMC', False, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "decide if run on MC or data")
+options.register('runOnMC', True, VarParsing.VarParsing.multiplicity.singleton, VarParsing.VarParsing.varType.bool, "decide if run on MC or data")
+# parsing command line arguments
+#if( hasattr(sys, "argv") ):
+  #options.parseArguments()
+#  if(len(sys.argv) > 1):
+#    print "Parsing command line arguments:"
+#  for args in sys.argv :
+#    arg = args.split(',')
+#    for val in arg:
+#      val = val.split('=')
+#      if(len(val)==2):
+#        print "Setting *", val[0], "* to:", val[1]
+#        setattr(options,val[0], val[1])
+
 
 process = cms.Process( 'PAT' )
 
@@ -26,12 +39,14 @@ process = cms.Process( 'PAT' )
 
 ### Data or MC?
 runOnMC = options.runOnMC
-#runOnMC = False
+print runOnMC
 
 ### Switch on/off selection steps
 
 # Step 0a
-useTrigger      = True
+useTrigger      = False
+if runOnMC:
+  useTrigger    = False
 # Step 0b
 useGoodVertex   = True
 # Step 1
@@ -41,19 +56,19 @@ useMuonVeto     = True
 # Step 3
 useElectronVeto = True
 # Step 4a
-use1Jet         = True
+use1Jet         = False
 # Step 4b
-use2Jets        = True
+use2Jets        = False
 # Step 4c (choice depends on trigger)
-use3JetsLoose   = True 
-use3JetsTight   = False 
+use3JetsLoose   = False
+use3JetsTight   = False
 # Step 5
-use4Jets        = False
-## Step 6
-#useBTag         = False
+use4Jets        = True
 
 ### Trigger matching?
-addTriggerMatching = True
+addTriggerMatching = False
+if runOnMC:
+  addTriggerMatching = False
 
 ### Reference selection
 
@@ -69,27 +84,19 @@ from TopQuarkAnalysis.Configuration.patRefSel_refMuJets import *
 #electronCut = ''
 # Jets
 #jetCut          = ''
-#jetCutPF        = 'pt > 20 && abs(eta) < 2.5 && numberOfDaughters > 1 && neutralHadronEnergyFraction < 0.99 && neutralEmEnergyFraction < 0.99 && (chargedEmEnergyFraction < 0.99 || abs(eta) > 2.4) && (chargedHadronEnergyFraction > 0. || abs(eta) >= 2.4) && (chargedMultiplicity > 0 || abs(eta) >= 2.4)'
-
 #veryLooseJetCut = 'pt > 20.' # transverse momentum (all jets)
 #looseJetCut     = 'pt > 35.' # transverse momentum (3rd jet, optional for 'use3JetsLoose = True')
 #tightJetCut     = 'pt > 45.' # transverse momentum (leading jets)
 
 # Trigger and trigger object
-#triggerSelectionData       = 'HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v*'
-#triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* '
-#triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v* OR HLT_IsoMu17_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFJet30_v* OR HLT_IsoMu20_eta2p1_TriCentralPFNoPUJet30_v* OR HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v*'
-triggerSelectionData       = 'HLT_IsoMu17_eta2p1_TriCentral* OR HLT_Mu17_eta2p1_TriCentral*'
-triggerObjectSelectionData        = 'type("TriggerMuon") && ( path("HLT_IsoMu17_eta2p1_TriCentral*") || path("HLT_Mu17_eta2p1_TriCentral*") )'
-#triggerSelectionData       = 'HLT_IsoMu24_eta2p1_v*'
-#triggerObjectSelectionData = 'HLT_IsoMu24_eta2p1_v*'
+#triggerSelectionData       = ''
+#triggerObjectSelectionData = ''
 #triggerSelectionMC       = ''
 #triggerObjectSelectionMC = ''
 
 ### Particle flow
 
 postfix = 'PF'
-
 
 # subtract charged hadronic pile-up particles (from wrong PVs)
 # effects also JECs
@@ -137,37 +144,7 @@ typeIMetCorrections = True
 
 # list of input files
 useRelVals = False # if 'False', "inputFiles" is used
-inputFiles = [#'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/197/044/E2D96041-00BE-E111-8BC1-001D09F2447F.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/EC2E6A5A-56AF-E111-9081-001D09F2924F.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/E8E3D3F9-55AF-E111-A81F-0025901D624E.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/E284461A-5AAF-E111-881B-001D09F25267.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/DC4C4117-55AF-E111-BE40-001D09F290BF.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/DAF425A5-55AF-E111-AE7B-E0CB4E4408C4.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/D8BD9075-4EAF-E111-AF3F-001D09F28EA3.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/D6777FC4-53AF-E111-8247-0025B32034EA.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/D0E96041-61AF-E111-9351-BCAEC5329705.root'
-             #,'/store/data/Run2012B/SingleMu/RECO/PromptReco-v1/000/195/398/CC6B2BF4-56AF-E111-9D79-001D09F25109.root'
-              '/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/752/3C0A66AC-789B-E111-94AB-003048CF99BA.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/774/88364725-889B-E111-B053-001D09F27003.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/806/ACB6E731-C89B-E111-811E-001D09F24664.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/812/145D80B4-D09B-E111-84E4-001D09F23A20.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/818/885D618A-E69B-E111-BBE8-001D09F25041.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/829/3AE91D27-049C-E111-A34A-BCAEC518FF8E.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/830/BA69838D-059C-E111-8DE1-003048D2BC30.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/834/6A191E05-5C9C-E111-8744-5404A63886A8.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/835/12C53245-4F9C-E111-B615-001D09F24FBA.root'
-             ,'/store/data/Run2012B/MuHad/AOD/PromptReco-v1/000/193/836/54FABAD3-3E9C-E111-A345-003048D3C90E.root'
-             # '/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/770/FCB29466-77C3-E111-8D0C-001D09F2462D.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/772/F65787B4-79C3-E111-971B-0019B9F72F97.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/774/56A19EC6-79C3-E111-884F-001D09F2462D.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/885/E875AEF2-2BC4-E111-8B0E-003048F11C58.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/889/A21ED86E-2DC4-E111-824B-00237DDC5BBC.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/891/94D9A5C2-2CC4-E111-A545-001D09F2906A.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/903/2A0AEA62-EAC4-E111-847B-5404A640A642.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/197/931/5278717C-D1C4-E111-9FCC-003048D3733E.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/198/011/3293599A-6BC5-E111-9FA4-BCAEC5364C62.root'
-             #,'/store/data/Run2012C/MuHad/AOD/PromptReco-v1/000/198/022/9018F0EF-DCC5-E111-B098-0025901D6268.root' 
-             ] # overwritten, if "useRelVals" is 'True'
+inputFiles = [] # overwritten, if "useRelVals" is 'True'
 
 # maximum number of events
 maxEvents = -1 # reduce for testing
@@ -175,14 +152,13 @@ maxEvents = -1 # reduce for testing
 ### Conditions
 
 # GlobalTags
-globalTagData = 'GR_R_52_V7D::All' # incl. Summer12 JEC and new b-tag SF
-globalTagMC   = 'START52_V9C::All' # incl. Summer12 JEC and new b-tag SF
+globalTagData = 'FT53_V21A_AN6::All' #'GR_R_53_V13::All'
+globalTagMC   = 'START53_V27::All' #'START53_V11::All'
 
 ### Output
 
 # output file
-#outputFile = 'patRefSel_muJets.root'
-outputFile = 'patTuple.root'
+outputFile = 'patRefSel_muJets.root'
 
 # event frequency of Fwk report
 fwkReportEvery = 1000
@@ -202,7 +178,6 @@ wantSummary = True
 
 process.load( "TopQuarkAnalysis.Configuration.patRefSel_basics_cff" )
 process.MessageLogger.cerr.FwkReport.reportEvery = fwkReportEvery
-process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.options.wantSummary = wantSummary
 if runOnMC:
   process.GlobalTag.globaltag = globalTagMC
@@ -217,17 +192,18 @@ else:
 if useRelVals:
   from PhysicsTools.PatAlgos.tools.cmsswVersionTools import pickRelValInputFiles
   if runOnMC:
-    inputFiles = pickRelValInputFiles( cmsswVersion  = 'CMSSW_5_2_5_cand1'
-                                     , relVal        = 'RelValTTbar'
-                                     , globalTag     = 'START52_V9'
-                                     , maxVersions   = 1
+    inputFiles = pickRelValInputFiles( cmsswVersion = 'CMSSW_5_3_4_cand1'
+                                     , dataTier     = 'AODSIM'
+                                     , relVal       = 'RelValProdTTbar'
+                                     , globalTag    = 'START53_V10'
+                                     , maxVersions  = 1
                                      )
   else:
-    inputFiles = pickRelValInputFiles( cmsswVersion  = 'CMSSW_5_2_5_cand1'
-                                     , relVal        = 'SingleMu'
-                                     , dataTier      = 'RECO'
-                                     , globalTag     = 'GR_R_52_V7_RelVal_mu2011B'
-                                     , maxVersions   = 1
+    inputFiles = pickRelValInputFiles( cmsswVersion = 'CMSSW_5_3_4_cand1'
+                                     , dataTier     = 'RECO'
+                                     , relVal       = 'SingleMu'
+                                     , globalTag    = 'GR_R_53_V12_RelVal_mu2012A'
+                                     , maxVersions  = 1
                                      )
 process.load( "TopQuarkAnalysis.Configuration.patRefSel_inputModule_cfi" )
 process.source.fileNames = inputFiles
@@ -587,7 +563,6 @@ if use4Jets:
 process.out.SelectEvents.SelectEvents.append( 'p' )
 
 ##______________________________________________________________________________________________//
-### PAT trigger
 from PhysicsTools.PatAlgos.tools.trigTools import *
 switchOnTrigger( process ) # overwrite sequence default "patDefaultSequence", since it is not used in any path
 process.patTrigger.addL1Algos = cms.bool(True) # add L1 algorithms' collection
@@ -609,11 +584,15 @@ process.p += process.patTrigger
 process.out.outputCommands = cms.untracked.vstring(
   'drop *',
   'keep *Vertex*_goodOfflinePrimaryVertices_*_PAT',
-  'keep *_goodPatMuons*_*_*',
   'keep *_selectedPatMuonsPF_*_*',
+  'keep *_selectedPatElectronsPF_*_*',
+  'keep GenEventInfoProduct_*_*_*',
+  'keep recoGenParticles_genParticles_*_*',
+  'keep *_addPileupInfo_*_*',
+  'keep *_goodPatMuons*_*_*',
   'keep *Jet*_veryLoosePatJets*_*_*',
   'keep *Jet*_loosePatJets*_*_*',
-  'keep *Jet*_tightPatJets*_*_*', 
+  'keep *Jet*_tightPatJets*_*_*',
   'keep *_patMETs*_*_*',
   'keep *TriggerPath*_patTrigger_*_*',
   'keep *_hltTriggerSummaryAOD_*_*',
@@ -623,5 +602,4 @@ process.out.outputCommands = cms.untracked.vstring(
   )
 
 ##______________________________________________________________________________________________//
-
 

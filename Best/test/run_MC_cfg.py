@@ -14,7 +14,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
-process.GlobalTag.globaltag = "START53_V26::All"
+process.GlobalTag.globaltag = "START53_V27::All"
 
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(
@@ -83,9 +83,7 @@ process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
 HLTPaths = {
-    #"SingleMu_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*","HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*","HLT_IsoMu28_*",],
     "SingleMu_7E33":["HLT_IsoMu24_eta2p1_v*",],
-    #"Mu_53X_GTV7":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v1", "HLT_IsoMu28_*",],
     "Mu_53X_GTV7":["HLT_IsoMu24_eta2p1_v*",],
 }
 if MC_flag:
@@ -100,11 +98,10 @@ process.load("SKKU.Best.EventWeightProducer_cfi")
 
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 
-#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt")
-process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt")
-process.cleanJets.uncSource   = cms.string("")
-#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/JEC11_V13_UncertaintySources_AK5PF.txt")
-#process.cleanJets.uncSource   = cms.string("Total")
+process.cleanJets.redoJES = cms.bool(False)
+process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt")
+#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt")
+process.cleanJets.uncSource   = cms.string("SubTotalMC")
 
 process.decaySubset.fillMode = cms.string("kME")
 
@@ -161,8 +158,8 @@ if MC_flag:
     process.p = cms.Path(
         #process.genParticleCount + process.genParticleTauVeto
         #+ process.genParticleMuVeto
-          process.printDecay
-        + process.goodOfflinePrimaryVertices
+        #  process.printDecay
+          process.goodOfflinePrimaryVertices
         + process.hltHighLevel
         * process.makeGenEvt
         #* process.pdfWeight
@@ -175,7 +172,6 @@ if MC_flag:
         * process.eventJERDn
         )
 else:
-    #process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
     process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
     process.p = cms.Path(
         process.goodOfflinePrimaryVertices

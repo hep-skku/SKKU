@@ -100,6 +100,13 @@ process.load("SKKU.Best.EventWeightProducer_cfi")
 process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 
 process.cleanJets.redoJES = cms.bool(True)
+process.cleanJets.jecFileNames = [
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L1FastJet_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2Relative_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L3Absolute_AK5PFchs.txt",
+    #"SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2L3Residual_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/PTFIXV2_FT_53_V21_AN5_private_L2L3Residual_AK5PFchs.txt",
+]
 process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt")
 #process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt")
 process.cleanJets.uncSource   = cms.string("Total")

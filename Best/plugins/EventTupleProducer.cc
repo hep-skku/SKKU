@@ -78,7 +78,7 @@ private:
   std::vector<int>* jetMCBits_;
 //  std::vector<double>* pTGen_; 
   std::vector<int>* pdgGen_;
-//  std::vector<double>* pdfWeight_;
+  std::vector<double>* pdfWeight_;
 };
 
 template<typename Lepton>
@@ -119,7 +119,7 @@ EventTupleProducer<Lepton>::EventTupleProducer(const edm::ParameterSet& pset)
   jetMCBits_ = new std::vector<int>();
 //  pTGen_ = new std::vector<double>();
   pdgGen_ = new std::vector<int>();
-//  pdfWeight_ = new std::vector<double>();
+  pdfWeight_ = new std::vector<double>();
   //eventWeight_ = new std::vector<double>();
   tree_->Branch("jets", "std::vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double> > >", &jets_);
   tree_->Branch("bTags", "std::vector<double>", &bTags_);
@@ -127,7 +127,7 @@ EventTupleProducer<Lepton>::EventTupleProducer(const edm::ParameterSet& pset)
   tree_->Branch("jetMCBits", "std::vector<int>", &jetMCBits_);
 //  tree_->Branch("pTGen", "std::vector<double>", &pTGen_);
   tree_->Branch("pdgGen", "std::vector<int>", &pdgGen_);
-//  tree_->Branch("pdfWeight", "std::vector<double>", &pdfWeight_);
+  tree_->Branch("pdfWeight", "std::vector<double>", &pdfWeight_);
   tree_->Branch("PUweight", &eventWeight_, "PUweight/d");
   tree_->Branch("PUweightup", &eventWeightUp_, "PUweightup/d");
   tree_->Branch("PUweightdn", &eventWeightDn_, "PUweightdn/d");
@@ -144,7 +144,7 @@ EventTupleProducer<Lepton>::~EventTupleProducer()
   if ( jetsFlavor_ ) delete jetsFlavor_;
   if ( jetMCBits_ ) delete jetMCBits_;
 //  if ( pTGen_ ) delete pTGen_;
-//  if ( pdfWeight_ ) delete pdfWeight_;
+  if ( pdfWeight_ ) delete pdfWeight_;
   if ( pdgGen_ ) delete pdgGen_;
 }
 
@@ -160,7 +160,7 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
   jetsFlavor_->clear();
   jetMCBits_->clear();
 //  pTGen_->clear();
-//  pdfWeight_->clear();
+  pdfWeight_->clear();
   pdgGen_->clear();
 
   edm::Handle<edm::View<reco::Vertex> > vertexHandle;
@@ -182,15 +182,17 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
     edm::Handle<double> eventWeightDnHandle;
     event.getByLabel(edm::InputTag("PUweight", "weightminus"), eventWeightDnHandle);
     eventWeightDn_= *eventWeightDnHandle;
+
+    edm::Handle<std::vector<double> > pdfWeightHandle;
+    if ( event.getByLabel(edm::InputTag("pdfWeight"), pdfWeightHandle) )
+    {
+      for ( int i=0, n=pdfWeightHandle->size(); i<n; i++ )
+      {
+        pdfWeight_->push_back(pdfWeightHandle->at(i));
+      }
+    }
   }
-/*
-  edm::Handle<std::vector<double> > pdfWeightHandle;
-  event.getByLabel(edm::InputTag("pdfWeight"), pdfWeightHandle);
-  for ( int i=0, n=pdfWeightHandle->size(); i<n; i++ )
-  {
-    pdfWeight_->push_back(pdfWeightHandle->at(i));
-  }
-*/
+
   edm::Handle<edm::View<Lepton> > leptonHandle;
   event.getByLabel(leptonLabel_, leptonHandle);
   int nPassingLepton = 0;

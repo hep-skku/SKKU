@@ -14,7 +14,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
-process.GlobalTag.globaltag = "START53_V26::All"
+process.GlobalTag.globaltag = "START53_V27::All"
 
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(
@@ -102,9 +102,8 @@ process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
 
 #process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt")
 process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt")
-process.cleanJets.uncSource   = cms.string("")
 #process.cleanJets.uncFilename = cms.string("SKKU/Best/data/JEC11_V13_UncertaintySources_AK5PF.txt")
-#process.cleanJets.uncSource   = cms.string("Total")
+process.cleanJets.uncSource   = cms.string("Total")
 
 process.decaySubset.fillMode = cms.string("kME")
 
@@ -161,8 +160,8 @@ if MC_flag:
     process.p = cms.Path(
         #process.genParticleCount + process.genParticleTauVeto
         #+ process.genParticleMuVeto
-          process.printDecay
-        + process.goodOfflinePrimaryVertices
+        #  process.printDecay
+          process.goodOfflinePrimaryVertices
         + process.hltHighLevel
         * process.makeGenEvt
         #* process.pdfWeight

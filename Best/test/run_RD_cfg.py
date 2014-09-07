@@ -1,8 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import os
 
-#MC_flag = False
-MC_flag = True
+MC_flag = False
 
 process = cms.Process("Ana")
 
@@ -12,46 +11,27 @@ process.load("Configuration.StandardSequences.Services_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
-process.GlobalTag.globaltag = "START53_V26::All"
+process.GlobalTag.globaltag = "FT53_V21A_AN6::All"
 
 process.source = cms.Source("PoolSource", 
     fileNames = cms.untracked.vstring(
        # 'file:./patRefSel_muJets.root',    
     ),
 )
-for line in open('../samples/TTJets.txt').readlines():
-
-    line = line.strip("'\", \n")
-    if '.root' not in line: continue
-    process.source.fileNames.append(line)
+process.source.fileNames = [
+#    '/store/user/ehkwon/BEST/NewJEC/MC/TTJets_MSDecays_central_TuneZ2star_8TeV_madgraph_tauola/patRefSel_muJets_9_1_pqT.root',
+    'file:///afs/cern.ch/user/e/ehkwon/public/patRefSel_muJets.root',
+]
+#for line in open('../samples/MSDecays_central1.txt').readlines():
+#
+#    line = line.strip("'\", \n")
+#    if '.root' not in line: continue
+#    process.source.fileNames.append(line)
 
 process.TFileService = cms.Service("TFileService",
-    fileName = cms.string("result_TTJets.root"),
-)
-
-process.genParticleCount = cms.EDFilter("GenParticleCountFilter",
-    src = cms.InputTag("genParticles"),
-    cut = cms.string("status == 3"),
-    ids = cms.vint32(13, -13, 11, -11),
-    minNumber = cms.uint32(1), 
-    maxNumber = cms.uint32(1),
-)
-
-process.genParticleTauVeto = cms.EDFilter("GenParticleCountFilter",
-    src = cms.InputTag("genParticles"),
-    cut = cms.string("status == 3"),
-    ids = cms.vint32(15, -15),
-    minNumber = cms.uint32(0),
-    maxNumber = cms.uint32(0),
-)
-
-process.printDecay = cms.EDAnalyzer("ParticleDecayDrawer",
-    src = cms.InputTag("genParticles"),
-    printP4 = cms.untracked.bool(False),
-    printPtEtaPhi = cms.untracked.bool(False),
-    printVertex = cms.untracked.bool(False)
+    fileName = cms.string("result_RD.root"),
 )
 
 process.noscraping = cms.EDFilter("FilterOutScraping",
@@ -74,28 +54,31 @@ process.goodOfflinePrimaryVertices = cms.EDFilter("PrimaryVertexObjectFilter",
 process.load('CommonTools/RecoAlgos/HBHENoiseFilter_cfi')
 
 process.load("HLTrigger.HLTfilters.hltHighLevel_cfi")
-HLTPaths = {
-    #"SingleMu_7E33":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v*","HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet45_35_25_v*","HLT_IsoMu28_*",],
-    "SingleMu_7E33":["HLT_IsoMu24_eta2p1_v*",],
-    #"Mu_53X_GTV7":["HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet50_40_30_v1", "HLT_IsoMu28_*",],
-    "Mu_53X_GTV7":["HLT_IsoMu24_eta2p1_v*",],
-}
-if MC_flag:
-    process.hltHighLevel.HLTPaths = HLTPaths["Mu_53X_GTV7"]
-else:
-    process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
+process.hltHighLevel.HLTPaths = ["HLT_IsoMu24_eta2p1_v*",]
 
-process.load("SKKU.Best.TopCleanJetSelector_cfi")
+process.load("SKKU.Best.TopCleanJetSelectorRD_cfi")
 process.load("SKKU.Best.EventWeightProducer_cfi")
+#process.load("SKKU.Best.pdfWeight_cff")
 
-process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V4_DATA_UncertaintySources_AK5PFchs.txt")
-#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V4_MC_Uncertainty_AK5PFchs.txt")
+#process.load("TopQuarkAnalysis.TopEventProducers.sequences.ttGenEvent_cff")
+
+process.cleanJets.redoJES = True
+process.cleanJets.jecFileNames = [
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L1FastJet_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2Relative_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L3Absolute_AK5PFchs.txt",
+    #"SKKU/Best/data/Summer13_V4/Summer13_V4_DATA_txts_fromDB/Summer13_V4_DATA_L2L3Residual_AK5PFchs.txt",
+    "SKKU/Best/data/Summer13_V4/PTFIXV2_FT_53_V21_AN5_private_L2L3Residual_AK5PFchs.txt",
+]
+process.cleanJets.uncFilename = cms.string("SKKU/Best/data/Summer13_V5_DATA_UncertaintySources_AK5PFchs.txt")
 process.cleanJets.uncSource   = cms.string("Total")
-#process.cleanJets.uncFilename = cms.string("SKKU/Best/data/JEC11_V13_UncertaintySources_AK5PF.txt")
-#process.cleanJets.uncSource   = cms.string("Total")
+
+#process.decaySubset.fillMode = cms.string("kME")
 
 process.event = cms.EDAnalyzer("EventTupleProducerMuon",
-    doMCMatch = cms.bool(True),
+    doMCMatch = cms.bool(False),
+    ttGenEvent = cms.InputTag("genEvt"),
+    #pdfWeights = cms.InputTag("pdfWeight"),
     gen = cms.InputTag("genParticles"),
     jet = cms.InputTag("cleanJets"),
     met = cms.InputTag("patMETsPF"),
@@ -140,30 +123,13 @@ process.eventJERDn = process.event.clone(
     met = cms.InputTag("cleanJets", "resDn"),
     )
 
-if MC_flag:
-    process.hltHighLevel.HLTPaths = HLTPaths["Mu_53X_GTV7"]
-    process.p = cms.Path(
-        process.genParticleCount + process.genParticleTauVeto
-        + process.printDecay
-        + process.goodOfflinePrimaryVertices
-        #+ process.hltHighLevel
-        * process.PUweight
-        * process.cleanJets
-        * process.event
-        * process.eventUp
-        * process.eventDn
-        * process.eventJERUp
-        * process.eventJERDn
-        )
-else:
-    #process.hltHighLevel.HLTPaths = HLTPaths["MuHad_5E33"] + HLTPaths["MuHad_7E33"]
-    process.hltHighLevel.HLTPaths = HLTPaths["SingleMu_7E33"]
-    process.p = cms.Path(
-        process.goodOfflinePrimaryVertices
-        + process.hltHighLevel
-        * process.cleanJets
-        * process.event
-        * process.eventUp
-        * process.eventDn
-        )
+process.p = cms.Path(
+    process.goodOfflinePrimaryVertices
+  + process.hltHighLevel
+  * process.cleanJets
+  * process.PUweight
+  * process.event
+  * process.eventUp
+  * process.eventDn
+)
 

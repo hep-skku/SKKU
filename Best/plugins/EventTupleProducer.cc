@@ -153,6 +153,8 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
 {
   using namespace std;
 
+  const bool isData = event.isRealData();
+
   jets_->clear();
   bTags_->clear();
   jetsFlavor_->clear();
@@ -165,19 +167,22 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
   event.getByLabel(vertexLabel_, vertexHandle);
   nPV_ = vertexHandle->size();
 
-//  eventWeight_ = eventWeightUp_ = eventWeightDn_ = 1;
+  eventWeight_ = eventWeightUp_ = eventWeightDn_ = 1;
  
-  edm::Handle<double> eventWeightHandle;
-  event.getByLabel(edm::InputTag("PUweight", "weight"), eventWeightHandle);
-  eventWeight_= *eventWeightHandle;
+  if ( !isData )
+  {
+    edm::Handle<double> eventWeightHandle;
+    event.getByLabel(edm::InputTag("PUweight", "weight"), eventWeightHandle);
+    eventWeight_= *eventWeightHandle;
 
-  edm::Handle<double> eventWeightUpHandle;
-  event.getByLabel(edm::InputTag("PUweight", "weightplus"), eventWeightUpHandle);
-  eventWeightUp_= *eventWeightUpHandle;
+    edm::Handle<double> eventWeightUpHandle;
+    event.getByLabel(edm::InputTag("PUweight", "weightplus"), eventWeightUpHandle);
+    eventWeightUp_= *eventWeightUpHandle;
 
-  edm::Handle<double> eventWeightDnHandle;
-  event.getByLabel(edm::InputTag("PUweight", "weightminus"), eventWeightDnHandle);
-  eventWeightDn_= *eventWeightDnHandle;
+    edm::Handle<double> eventWeightDnHandle;
+    event.getByLabel(edm::InputTag("PUweight", "weightminus"), eventWeightDnHandle);
+    eventWeightDn_= *eventWeightDnHandle;
+  }
 /*
   edm::Handle<std::vector<double> > pdfWeightHandle;
   event.getByLabel(edm::InputTag("pdfWeight"), pdfWeightHandle);
@@ -203,7 +208,7 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
 
   //--https://twiki.cern.ch/twiki/bin/viewauth/CMS/TopPtReweighting
   edm::Handle<TtGenEvent> genEvt;
-  event.getByLabel(ttGenEvent_, genEvt);
+  if ( !isData ) event.getByLabel(ttGenEvent_, genEvt);
 
   //--https://cmssdt.cern.ch/SDT/lxr/source/AnalysisDataFormats/TopObjects/src/TtGenEvent.cc
   //--TtGenEvent::leptonicDecayTop(bool excludeTauLeptons) const //default: excludeTauLeptons=false
@@ -213,23 +218,26 @@ void EventTupleProducer<Lepton>::analyze(const edm::Event& event, const edm::Eve
   double SF_top = 1, SF_topBar = 1;
   ptWeight_ = ptWeightUp_ = ptWeightDn_ = 1;
 
-  //bool fromWBoson = true;
-  int nLeptons = genEvt->numberOfLeptons();
-  if ( nLeptons > 0 ) {
-    topPt    = genEvt->top()->pt();
-    topBarPt = genEvt->topBar()->pt();
-    if ( nLeptons == 1 ) {
-      //topPt    = genEvt->leptonicDecayTop()->pt(); topBarPt = genEvt->hadronicDecayTop()->pt();
-      SF_top = TMath::Exp(0.159+((-0.00141)*topPt));
-      SF_topBar = TMath::Exp(0.159+((-0.00141)*topBarPt));
-    } else if ( nLeptons == 2 ) {
-      //genEvt->leptonicDecayTop()->pdgId()>0 ? topPt = genEvt->leptonicDecayTop()->pt() : topBarPt = genEvt->leptonicDecayTop()->pt();
-      SF_top = TMath::Exp(0.148+((-0.00129)*topPt));
-      SF_topBar = TMath::Exp(0.148+((-0.00129)*topBarPt));
+  if ( !isData )
+  {
+    //bool fromWBoson = true;
+    int nLeptons = genEvt->numberOfLeptons();
+    if ( nLeptons > 0 ) {
+      topPt    = genEvt->top()->pt();
+      topBarPt = genEvt->topBar()->pt();
+      if ( nLeptons == 1 ) {
+        //topPt    = genEvt->leptonicDecayTop()->pt(); topBarPt = genEvt->hadronicDecayTop()->pt();
+        SF_top = TMath::Exp(0.159+((-0.00141)*topPt));
+        SF_topBar = TMath::Exp(0.159+((-0.00141)*topBarPt));
+      } else if ( nLeptons == 2 ) {
+        //genEvt->leptonicDecayTop()->pdgId()>0 ? topPt = genEvt->leptonicDecayTop()->pt() : topBarPt = genEvt->leptonicDecayTop()->pt();
+        SF_top = TMath::Exp(0.148+((-0.00129)*topPt));
+        SF_topBar = TMath::Exp(0.148+((-0.00129)*topBarPt));
+      }
+      ptWeight_ = sqrt(SF_top*SF_topBar);
+      ptWeightUp_ = ptWeight_*ptWeight_; 
+      ptWeightDn_ = 1;
     }
-    ptWeight_ = sqrt(SF_top*SF_topBar);
-    ptWeightUp_ = ptWeight_*ptWeight_; 
-    ptWeightDn_ = 1;
   }
 
   edm::Handle<edm::View<pat::MET> > metHandle;

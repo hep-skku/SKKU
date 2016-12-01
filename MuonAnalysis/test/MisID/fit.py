@@ -159,7 +159,7 @@ if __name__ == '__main__':
     fOut = TFile(fNameOut, "RECREATE")
 
     modeDir = fIn.GetDirectory(mode)
-    if modeDir == None: os.exit(1)
+    if modeDir == None: sys.exit(1)
 
     for idName in set([x.GetName()[:-5] for x in modeDir.GetListOfKeys()]):
         idDir1 = modeDir.GetDirectory("%s_leg1" % idName)

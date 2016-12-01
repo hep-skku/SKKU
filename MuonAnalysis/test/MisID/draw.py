@@ -3,16 +3,15 @@
 modeDef = {
     "proton":("lamb", "Proton"),
     "pion":("ks", "Pion"),
-    "Kp":("phi", "K^{+}"),
-    "Km":("phi", "K^{-}"),
+    "kaon":("phi", "Kaon"),
 }
 
 import sys, os
 if len(sys.argv) < 3 or \
     sys.argv[1] not in ("MC", "RD") or \
     sys.argv[2] not in modeDef:
-    print "python draw.py [RD,MC] [proton,pion,Kp,Km]"
-    os.exit(1)
+    print "python draw.py [RD,MC] [proton,pion,kaon]"
+    sys.exit(1)
 
 dataType = sys.argv[1]
 submod = sys.argv[2]
@@ -32,12 +31,12 @@ varNames = {
     "abseta":("%s pseudorapidity |#eta|" % xtitle)
 }
 idSets = [
-    #("RPC","RPC Loose ID", kRed),
-    #("TRK","Tracker muons (no arbitration)", kBlack),
-    #("Soft","Soft muon ID", kAzure+1),
-    ("Loose","Loose muon ID", kGreen+1),
-    ("Medium","Medium muon ID", kMagenta),
-    ("Tight","Tight muon ID", kBlack),
+    #("isRPC","RPC Loose ID", kRed),
+    #("isTRK","Tracker muons (no arbitration)", kBlack),
+    #("isSoft","Soft muon ID", kAzure+1),
+    ("isLoose","Loose muon ID", kGreen+1),
+    ("isMedium","Medium muon ID", kMagenta),
+    ("isTight","Tight muon ID", kBlack),
     #("OneLoose","TMOneStationLoose", kRed),
     #("OneTight","TMOneStationTight", kRed),
     #("LastLowPtLoose","TMLastLowPtLoose", kMagenta),
@@ -59,7 +58,7 @@ cOverall = TCanvas("cOverall", "cOverall", 500, 500)
 frmOverall = TH1F("frmOverall", ";;Misidentification probability (%)", len(idSets), 0, len(idSets))
 grpOverall = TGraphAsymmErrors()
 for i, (idName, idTitle, color) in enumerate(idSets):
-    idDir = f.GetDirectory("%s/%s/%s" % (submod, idName, "pt"))
+    idDir = f.GetDirectory("%s/mu_%s/%s" % (submod, idName, "pt"))
     frmOverall.GetXaxis().SetBinLabel(i+1, idName)
     g = idDir.Get("gRatio0")
     grpOverall.SetPoint(i, i+0.5, g.GetY()[0]*100)
@@ -70,7 +69,7 @@ grpOverall.Draw("p")
 
 #for idName in [x.GetName() for x in f.GetDirectory(submod).GetListOfKeys()]:
 for i, (idName, idTitle, color) in enumerate(idSets):
-    idDir = f.GetDirectory("%s/%s" % (submod, idName))
+    idDir = f.GetDirectory("%s/mu_%s" % (submod, idName))
     if idDir == None: continue
     for varName in [x.GetName() for x in idDir.GetListOfKeys()]:
         varDir = idDir.GetDirectory(varName)
@@ -111,7 +110,8 @@ for varName in frames:
     if varName == "pt": ranges[1] = maxPt
     frame.GetXaxis().SetRangeUser(ranges[0],ranges[1])
     frame.SetMinimum(ranges[2])
-    frame.SetMaximum(ranges[3])
+    #frame.SetMaximum(ranges[3])
+    frame.SetMaximum(0.5)
     frame.Draw()
 
     for g in graphs[varName]:
